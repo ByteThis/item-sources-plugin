@@ -28,7 +28,10 @@ import org.jsoup.select.Elements;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import java.io.IOException;
 
 @PluginDescriptor(name = "Item Sources")
 public class ItemSourcesPlugin extends Plugin
@@ -37,7 +40,6 @@ public class ItemSourcesPlugin extends Plugin
 	@Inject private ClientToolbar clientToolbar;
 	@Inject private ItemSourcesConfig config;
 	@Inject private OkHttpClient okHttpClient;
-	@Inject private ScheduledExecutorService executor;
 	@Inject private ItemManager itemManager;
 
 	private ItemSourcesPanel panel;
@@ -137,22 +139,29 @@ public class ItemSourcesPlugin extends Plugin
 	private void fetchItemData(String itemName)
 	{
 		SwingUtilities.invokeLater(() -> panel.updateContent(itemName.toUpperCase(), "<i>Fetching data...</i>", null));
-		executor.submit(() -> {
-			String wikiUrl = WIKI_DOMAIN + "/w/" + itemName.replace(" ", "_");
-			Request request = new Request.Builder().url(wikiUrl).header("User-Agent", USER_AGENT).build();
 
-			// Get the icon from ItemManager
-			var searchResults = itemManager.search(itemName);
-			java.awt.image.BufferedImage icon = searchResults.isEmpty() ? null : itemManager.getImage(searchResults.get(0).getId());
+		String wikiUrl = WIKI_DOMAIN + "/w/" + itemName.replace(" ", "_") + "?action=render";		Request request = new Request.Builder().url(wikiUrl).header("User-Agent", USER_AGENT).build();
 
-			try (Response response = okHttpClient.newCall(request).execute())
+		var searchResults = itemManager.search(itemName);
+		java.awt.image.BufferedImage icon = searchResults.isEmpty() ? null : itemManager.getImage(searchResults.get(0).getId());
+
+		okHttpClient.newCall(request).enqueue(new Callback()
+		{
+			@Override
+			public void onFailure(Call call, IOException e)
 			{
-				if (!response.isSuccessful()) return;
-				String html = response.body().string();
-				SwingUtilities.invokeLater(() -> panel.updateContent(itemName.toUpperCase(), parseWikiData(html, itemName), icon));
-			}
-			catch (Exception e) {
 				SwingUtilities.invokeLater(() -> panel.updateContent("Error", "Could not connect to Wiki.", null));
+			}
+
+			@Override
+			public void onResponse(Call call, Response response) throws IOException
+			{
+				try (response)
+				{
+					if (!response.isSuccessful()) return;
+					String html = response.body().string();
+					SwingUtilities.invokeLater(() -> panel.updateContent(itemName.toUpperCase(), parseWikiData(html, itemName), icon));
+				}
 			}
 		});
 	}

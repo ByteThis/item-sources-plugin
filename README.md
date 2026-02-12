@@ -1,5 +1,10 @@
 # <img width="32" height="32" alt="icon" src="https://github.com/user-attachments/assets/a0616da8-898a-4b14-8a53-4049d3b63095" /> Item Sources Plugin
 
+[![](https://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/installs/plugin/item-sources)](https://runelite.net/plugin-hub/)
+[![Plugin Rank](http://img.shields.io/endpoint?url=https://api.runelite.net/pluginhub/shields/rank/plugin/item-sources)](https://runelite.net/plugin-hub/show/item-sources)
+
+[Discord](https://discordapp.com/users/126116650184474625)
+
 A simple utility for RuneLite that shows exactly how to get any item in Old School RuneScape without leaving the game.
 Particularly useful for Ironman accounts.
 

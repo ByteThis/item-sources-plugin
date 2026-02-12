@@ -233,8 +233,14 @@ public class ItemSourcesPlugin extends Plugin
 
 					if (idx == 0) {
 						Element link = cell.selectFirst("a");
-						// Preserve anchors like #High
-						row.linkUrl = (link != null) ? WIKI_DOMAIN + link.attr("href") : WIKI_DOMAIN + "/w/" + val.replace(" ", "_");
+						String href = (link != null) ? link.attr("href") : "/w/" + val.replace(" ", "_");
+
+						// Fix: If URL is absolute (contains domain), slice from "/w/" to avoid duplication
+						if (href.contains("/w/")) {
+							href = href.substring(href.indexOf("/w/"));
+						}
+
+						row.linkUrl = WIKI_DOMAIN + href;
 					}
 				}
 			}
